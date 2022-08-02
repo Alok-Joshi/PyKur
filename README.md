@@ -1,2 +1,2 @@
 # PyKur
-An async friendly Kurento Media Server Client
+A Kurento Media Server Client written in Python 
