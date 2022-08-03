@@ -1,3 +1,6 @@
+import uuid
+import json
+
 class media_object:
     def __init__(self,session_id,object_id):
         self.session_id = session_id
@@ -7,6 +10,9 @@ class media_object:
         """ Frees the resources of the specified object on the Kurento Media Server. Supposed to call when the media object has served its purpose """
         pass
 
-    def _create_json_rpc(method,params):
-        """ Takes the method and params, and returns a json string """
+    def generate_json_rpc(self,params,method):
+        """ generates the json string for sending to the server """
+
+        message = {"jsonrpc":"2.0","id":str(uuid.uuid4()),"method":method,"params":params}
+        return json.dumps(message)
 
