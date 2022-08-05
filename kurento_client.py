@@ -3,7 +3,6 @@ import uuid
 import json
 
 from endpoints import player_endpoint, webrtc_endpoint
-from .pipeline import pipeline
 
 class kurento_client:
 
@@ -20,17 +19,13 @@ class kurento_client:
         """Creates the media pipeline """
         self.create("MediaPipeline")
         
-    def get_pipeline_id_dict(self):
-        """ a safe way to return the pipeline_id in case its None"""
-
-        if(self.pipeline_id):
-            return {"pipeline":self.pipeline_id}
-        else:
-            return dict()
-
     def create(self,media_element,**kwargs):
-        """ Create the given media_element """
-            params = { "type": media_element, "constructorParams": kwargs+self.get_pipeline_id_dict()  ,"sessionId":session_id }
+            """ Create the   media_element and returns it. Argument for PlayerEndpoint: uri """
+        
+            params = { "type": media_element, "constructorParams": kwargs ,"sessionId":self.session_id }
+
+            if self.pipeline_id:
+                params["constructorParams"] += {"pipeline":self.pipeline_id }
 
             message= self.generate_json_rpc(params,"create")
             self.ws.send(message)
@@ -43,7 +38,7 @@ class kurento_client:
                     endpoint = webrtc_endpoint(self.session_id,object_id,self.kms_url)
 
                 elif(media_element == "PlayerEndpoint"):
-                    endpoint = player_endpoint(self.session_id,object_id,kwargs["rtsp_url"],self.kms_url)
+                    endpoint = player_endpoint(self.session_id,object_id,kwargs["uri"],self.kms_url)
 
                 elif(media_element == "MediaPipeline"):
                     self.pipeline_id = response["result"]["value"]
