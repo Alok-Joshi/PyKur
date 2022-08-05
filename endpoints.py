@@ -1,8 +1,10 @@
 import websocket
 import uuid
 import json
-from kurento_client import generate_json_rpc
+import logging
 from media_element import  media_element
+
+logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG)
 
 class webrtc_endpoint(media_element):
     def __init__(self, session_id, object_id, kms_url):
@@ -39,7 +41,7 @@ class webrtc_endpoint(media_element):
 class player_endpoint(media_element):
 
     def __init__(self,session_id,object_id,rtsp_url,kms_url):
-        super.__init__(session_id,object_id,kms_url)
+        super().__init__(session_id,object_id,kms_url)
         self.rtsp_url = rtsp_url
 
     def play(self,callback,*callback_args):

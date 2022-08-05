@@ -1,6 +1,11 @@
 import uuid
 import json
 import websocket
+import threading
+import logging
+import time
+#websocket.enableTrace(True)
+logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
 
 class media_element:
 
@@ -12,27 +17,48 @@ class media_element:
         self.event_dictionary = dict()
 
         self.ws = websocket.WebSocketApp(self.kms_url,on_message= lambda ws,msg: self.on_message(ws,msg))
+        self.ws_thread = threading.Thread(target = self.ws.run_forever,args=(None, None, 60, 30))
+        self.ws_thread.start()
+        time.sleep(10)
+        self.ping()
+        
+
+    def ping(self):
+        params = {"interval":240000}
+        rpc_id = str(uuid.uuid4())
+        message = self.generate_json_rpc(params,"ping",rpc_id) 
+        self.ws.send(message)  
 
     def on_message(self,ws,message):
         """ Handles the responses from the server """
 
         message = json.loads(message)
-        
-        if "method" in message:
-            event_type = message["params"]["type"]
+        try:         
+            if "method" in message:
+                logging.info("server message: ENDPOINTSIDE "+str(message))
+                event_type = message["params"]["type"]
 
-            callback = self.event_dictionary[event_type][0]
-            callback_args = self.event_dictionary[event_type][1]
-            callback(*callback_args)
+                callback = self.event_dictionary[event_type][0]
+                callback_args = self.event_dictionary[event_type][1]
+                callback(*callback_args)
 
-        elif "result" in message:
-            callback = self.event_dictionary[message["id"]][0]
-            callback_args = self.event_dictionary[message["id"]][1]
-            callback(*callback_args)
+            elif "result" in message:
+                if message["result"]["value"] == "pong":
+                    self.ping()
 
-        elif "error" in message:
-            pass #raise exception of Kurento
-        
+                logging.info("server response: ENDPOINTSIDE "+str(message))
+
+
+                callback = self.event_dictionary[message["id"]][0]
+                callback_args = self.event_dictionary[message["id"]][1]
+                callback(*callback_args)
+
+            elif "error" in message:
+                logging.error("server error: ENDPOINTSIDE "+str(message))
+
+        except Exception as e:
+            logging.error(e)
+               
     def _subscribe(self,params,rpc_id):
         """Allows us to subscribe to an event associated with a media_element """
         message = self.generate_json_rpc(params,"subscribe",rpc_id)
@@ -57,8 +83,7 @@ class media_element:
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
         
-        rpc_id = str(uuid.uuid4())
-        self._subscribe(params,rpc_id)
+        self._subscribe(params,event_name)
         
     def add_event(self,event_name,callback,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)

@@ -1,8 +1,11 @@
 import websocket
 import uuid
 import json
-
+import logging
 from endpoints import player_endpoint, webrtc_endpoint
+
+
+logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode ="w")
 
 class kurento_client:
 
@@ -22,10 +25,11 @@ class kurento_client:
     def create(self,media_element,**kwargs):
             """ Create the   media_element and returns it. Argument for PlayerEndpoint: uri """
         
-            params = { "type": media_element, "constructorParams": kwargs ,"sessionId":self.session_id }
+            params = { "type": media_element, "constructorParams": kwargs, "properties": {} }
 
             if self.pipeline_id:
-                params["constructorParams"] += {"pipeline":self.pipeline_id }
+                params["constructorParams"].update({"mediaPipeline":self.pipeline_id })
+                params["sessionId"] = self.session_id
 
             message= self.generate_json_rpc(params,"create")
             self.ws.send(message)
@@ -33,6 +37,8 @@ class kurento_client:
             response = json.loads(self.ws.recv())
             if "result" in response:
                 endpoint = None
+                logging.info("server response: "+str(response))
+                
                 object_id = response["result"]["value"]
                 if(media_element == "WebRtcEndpoint"):
                     endpoint = webrtc_endpoint(self.session_id,object_id,self.kms_url)
@@ -47,6 +53,7 @@ class kurento_client:
                 return endpoint
 
             else:
+                logging.error("server response: "+str(response))
                 pass #handle error
 
     def generate_json_rpc(self,params,method):
