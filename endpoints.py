@@ -21,7 +21,7 @@ class webrtc_endpoint(media_element):
        #insert the callback in some callback dictionary, call it when you recieve sdp answer 
 
     def add_ice_candidate(self,candidate,callback,*callback_args):
-        """ Adds ICE Candidate recieved from WebRTC Client to KMS"""
+        "Adds the ice candidate recieved from the other WebRTC Peer to the WebRTC Endpoint "
 
         params = { "object":self.object_id, "operation":"addIceCandidate","operationParams": { "candidate" : candidate },"sessionId": self.session_id }
 

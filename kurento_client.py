@@ -23,7 +23,7 @@ class kurento_client:
         self.create("MediaPipeline")
         
     def create(self,media_element,**kwargs):
-            """ Create the   media_element and returns it. Argument for PlayerEndpoint: uri """
+            """ Creates the media element  and  it. Argument for PlayerEndpoint: uri """
         
             params = { "type": media_element, "constructorParams": kwargs, "properties": {} }
 
