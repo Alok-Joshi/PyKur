@@ -20,40 +20,49 @@ class kurento_client:
         
     def _create_media_pipeline(self) -> None:
         """Creates the media pipeline """
-        self.create("MediaPipeline")
-        
-    def create(self,media_element,**kwargs):
+        params = { "type": "MediaPipeline", "constructorParams":{}, "properties": {} }
+        response = self._create(params)
+
+        if "result" in response:
+            self.pipeline_id  = response["result"]["value"]
+            self.session_id = response["result"]["sessionId"]
+
+        elif "error" in response:
+            pass #throw exception
+
+
+    def _create(self,params):
+        """ Creates the media element as mentioned in the params, and returns the response in the form of a python dictionary  """ 
+
+        message = self.generate_json_rpc(params,"create")
+        self.ws.send(message)
+        response = json.loads(self.ws.recv())
+        return response
+         
+    def add_endpoint(self,media_element,**kwargs):
             """ Creates the media element  and  it. Argument for PlayerEndpoint: uri """
         
             params = { "type": media_element, "constructorParams": kwargs, "properties": {} }
-
-            if self.pipeline_id:
-                params["constructorParams"].update({"mediaPipeline":self.pipeline_id })
-                params["sessionId"] = self.session_id
-
             message= self.generate_json_rpc(params,"create")
-            self.ws.send(message)
 
+            self.ws.send(message)
             response = json.loads(self.ws.recv())
+
             if "result" in response:
                 endpoint = None
                 logging.info("server response: "+str(response))
-                
                 object_id = response["result"]["value"]
+
                 if(media_element == "WebRtcEndpoint"):
                     endpoint = webrtc_endpoint(self.session_id,object_id,self.kms_url)
 
                 elif(media_element == "PlayerEndpoint"):
                     endpoint = player_endpoint(self.session_id,object_id,kwargs["uri"],self.kms_url)
 
-                elif(media_element == "MediaPipeline"):
-                    self.pipeline_id = response["result"]["value"]
-                    self.session_id = response["result"]["sessionId"]
-
                 return endpoint
 
             else:
-                logging.error("server response: "+str(response))
+                logging.error("server response ERROR: "+str(response))
                 pass #handle error
 
     def generate_json_rpc(self,params,method):
