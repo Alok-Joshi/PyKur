@@ -26,6 +26,7 @@ class media_element:
             {event_id : message["id"], status: success/failure, server_response (in event of success) :  message["result"]["value"] OR server_error: message["error"] } """
 
             parsed_message = dict()
+            logging.info("Server Response:"+message)
             message = json.loads(message)
             if "method" in message:
                 message["event"] = message["params"]["value"]["type"]
@@ -50,19 +51,23 @@ class media_element:
 
     def on_message(self,ws,message):
         parsed_message = self._parse_message(message) 
+        try:
 
-        if(parsed_message["status"] == 1):
-            callback  = self.event_dictionary[parsed_message["event"]][0]
-            callback_args  = self.event_dictionary[parsed_message["event"]][1]
-            
-            if(callback is not None):
-                server_response = parsed_message["server_response"]
-                if(parsed_message["server_response"] is not None):
-                    callback(server_response,*callback_args)
-                else:
-                    callback(*callback_args)
-        else:
-            pass #throw exception OR use given on_error callback 
+            logging.info("Server Response: "+str(parsed_message))
+            if(parsed_message["status"] == 1):
+                callback  = self.event_dictionary[parsed_message["event"]][0]
+                callback_args  = self.event_dictionary[parsed_message["event"]][1]
+                logging.debug(f"{callback}  {callback_args}")
+                if(callback is not None):
+                    server_response = parsed_message["server_response"]
+                    if(parsed_message["server_response"] is not None):
+                        callback(server_response,*callback_args)
+                    else:
+                        callback(*callback_args)
+            else:
+                pass #throw exception OR use given on_error callback 
+        except Exception as e:
+            print(e)      
             
             
     def _subscribe(self,params,rpc_id):
@@ -88,7 +93,8 @@ class media_element:
 
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
-        rpc_id = "subcribe_"+event_name 
+        rpc_id = "subcribe_"+event_name
+        self.add_event(rpc_id,callback,*callback_args)
         self._subscribe(params,rpc_id)
         
     def add_event(self,event_name,callback,*callback_args):
