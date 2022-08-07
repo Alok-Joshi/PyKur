@@ -21,12 +21,6 @@ class media_element:
         self.ws_thread.start()
         time.sleep(2) #to allow the websocket connection to properly initialise, will replace this with a method ot check connection status
 
-    def ping(self):
-        params = {"interval":240000}
-        rpc_id = str(uuid.uuid4())
-        message = self.generate_json_rpc(params,"ping",rpc_id) 
-        self.ws.send(message)  
-
     def _parse_message(self, message):
             """ Parses the server response into a standard format. 
             {event_id : message["id"], status: success/failure, server_response (in event of success) :  message["result"]["value"] OR server_error: message["error"] } """
@@ -105,10 +99,3 @@ class media_element:
 
         message = {"jsonrpc":"2.0","id":rpc_id,"method":method,"params":params}
         return json.dumps(message)
-    def _response_parser(self,response):
-        """ Parses the response into a standardised format. Returns a dictionary """ 
-        parsed_response = dict()
-        if "method" in response:
-            pass #handle onevents
-        else:
-            parsed_response["event_id"] = parsed_response["id"]
