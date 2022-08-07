@@ -19,9 +19,7 @@ class media_element:
         self.ws = websocket.WebSocketApp(self.kms_url,on_message= lambda ws,msg: self.on_message(ws,msg))
         self.ws_thread = threading.Thread(target = self.ws.run_forever,args=(None, None, 60, 30))
         self.ws_thread.start()
-        time.sleep(10)
-        self.ping()
-        
+        time.sleep(2) #to allow the websocket connection to properly initialise, will replace this with a method ot check connection status
 
     def ping(self):
         params = {"interval":240000}
@@ -29,36 +27,50 @@ class media_element:
         message = self.generate_json_rpc(params,"ping",rpc_id) 
         self.ws.send(message)  
 
-    def on_message(self,ws,message):
-        """ Handles the responses from the server """
+    def _parse_message(self, message):
+            """ Parses the server response into a standard format. 
+            {event_id : message["id"], status: success/failure, server_response (in event of success) :  message["result"]["value"] OR server_error: message["error"] } """
 
-        message = json.loads(message)
-        try:         
+            parsed_message = dict()
+            message = json.loads(message)
             if "method" in message:
-                logging.info("server message: ENDPOINTSIDE "+str(message))
-                event_type = message["params"]["type"]
-
-                callback = self.event_dictionary[event_type][0]
-                callback_args = self.event_dictionary[event_type][1]
-                callback(*callback_args)
+                message["event"] = message["params"]["value"]["type"]
+                message["server_response"] = message["params"]["value"]
+                message["status"] = "SUCCESS" 
 
             elif "result" in message:
-                if message["result"]["value"] == "pong":
-                    self.ping()
+                parsed_message["event"] = message["id"]
+                parsed_message["status"] = 1 
 
-                logging.info("server response: ENDPOINTSIDE "+str(message))
-
-
-                callback = self.event_dictionary[message["id"]][0]
-                callback_args = self.event_dictionary[message["id"]][1]
-                callback(*callback_args)
+                if "value" in message["result"]:
+                    parsed_message["server_response"] = message["result"]["value"]
+                else:
+                    parsed_message["server_response"] = None
 
             elif "error" in message:
-                logging.error("server error: ENDPOINTSIDE "+str(message))
+                parsed_message["event"] = message["id"]
+                parsed_message["status"] = 0
+                parsed_message["error"] = message["error"]
 
-        except Exception as e:
-            logging.error(e)
-               
+            return parsed_message
+
+    def on_message(self,ws,message):
+        parsed_message = self._parse_message(message) 
+
+        if(parsed_message["status"] == 1):
+            callback  = self.event_dictionary[parsed_message["event"]][0]
+            callback_args  = self.event_dictionary[parsed_message["event"]][1]
+            
+            if(callback is not None):
+                server_response = parsed_message["server_response"]
+                if(parsed_message["server_response"] is not None):
+                    callback(server_response,*callback_args)
+                else:
+                    callback(*callback_args)
+        else:
+            pass #throw exception OR use given on_error callback 
+            
+            
     def _subscribe(self,params,rpc_id):
         """Allows us to subscribe to an event associated with a media_element """
         message = self.generate_json_rpc(params,"subscribe",rpc_id)
@@ -82,8 +94,8 @@ class media_element:
 
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
-        
-        self._subscribe(params,event_name)
+        rpc_id = "subcribe_"+event_name 
+        self._subscribe(params,rpc_id)
         
     def add_event(self,event_name,callback,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)
@@ -93,6 +105,10 @@ class media_element:
 
         message = {"jsonrpc":"2.0","id":rpc_id,"method":method,"params":params}
         return json.dumps(message)
-        
-
-
+    def _response_parser(self,response):
+        """ Parses the response into a standardised format. Returns a dictionary """ 
+        parsed_response = dict()
+        if "method" in response:
+            pass #handle onevents
+        else:
+            parsed_response["event_id"] = parsed_response["id"]
