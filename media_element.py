@@ -29,9 +29,9 @@ class media_element:
             logging.info("Server Response:"+message)
             message = json.loads(message)
             if "method" in message:
-                message["event"] = message["params"]["value"]["type"]
-                message["server_response"] = message["params"]["value"]
-                message["status"] = "SUCCESS" 
+                parsed_message["event"] = message["params"]["value"]["type"]
+                parsed_message["server_response"] = message["params"]["value"]
+                parsed_message["status"] = 1 
 
             elif "result" in message:
                 parsed_message["event"] = message["id"]
@@ -50,9 +50,10 @@ class media_element:
             return parsed_message
 
     def on_message(self,ws,message):
+        """ Parses the message recieved from the kurento media server and handles the message by calling the appropriate callback function assigned to the server response """
+
         parsed_message = self._parse_message(message) 
         try:
-
             logging.info("Server Response: "+str(parsed_message))
             if(parsed_message["status"] == 1):
                 callback  = self.event_dictionary[parsed_message["event"]][0]
@@ -93,8 +94,8 @@ class media_element:
 
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
-        rpc_id = "subcribe_"+event_name
-        self.add_event(rpc_id,callback,*callback_args)
+        rpc_id = "subcribe_"+event_name+"_response"
+        self.add_event(rpc_id,None,())
         self._subscribe(params,rpc_id)
         
     def add_event(self,event_name,callback,*callback_args):
