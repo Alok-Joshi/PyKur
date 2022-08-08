@@ -4,6 +4,8 @@ import websocket
 import threading
 import logging
 import time
+from exception import KurentoException
+
 #websocket.enableTrace(True)
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
 
@@ -66,7 +68,7 @@ class media_element:
                     else:
                         callback(*callback_args)
             else:
-                pass #throw exception OR use given on_error callback 
+                raise KurentoException(parsed_message["error"])
         except Exception as e:
             print(e)      
             
