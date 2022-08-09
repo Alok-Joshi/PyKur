@@ -35,18 +35,20 @@ class kurento_client:
 
     def _create(self,params):
         """ Creates the media element as mentioned in the params, and returns the response in the form of a python dictionary  """ 
-
-        message = generate_json_rpc(params,"create")
+        rpc_id = str(uuid.uuid4())
+        message = generate_json_rpc(params,"create",rpc_id)
         self.ws.send(message)
         response = json.loads(self.ws.recv())
         return response
          
     def add_endpoint(self,media_element,**kwargs):
             """ Creates the media element  and  it. Argument for PlayerEndpoint: uri """
+
             kwargs.update({"mediaPipeline": self.pipeline_id})  
             params = { "type": media_element, "constructorParams": kwargs, "properties": {} }
-            message= generate_json_rpc(params,"create")
+            rpc_id = str(uuid.uuid4())
 
+            message= generate_json_rpc(params,"create",rpc_id)
             self.ws.send(message)
             response = json.loads(self.ws.recv())
 

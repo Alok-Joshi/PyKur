@@ -1,14 +1,14 @@
 import json
 import logging
 
-def generate_json_rpc(self,params,method,rpc_id):
+def generate_json_rpc(params,method,rpc_id):
     """ generates the json string for sending to the server """
 
     message = {"jsonrpc":"2.0","id":rpc_id,"method":method,"params":params}
     return json.dumps(message)
 
 
-def  parse_message(self, message):
+def  parse_message(message):
             """ Parses the server response into a standard format. 
             {event_id : message["id"], status: success/failure, server_response (in event of success) :  message["result"]["value"] OR server_error: message["error"] } """
 
