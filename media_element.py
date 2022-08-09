@@ -5,6 +5,7 @@ import threading
 import logging
 import time
 from exception import KurentoException
+from utilities import generate_json_rpc,parse_message
 
 #websocket.enableTrace(True)
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
@@ -23,38 +24,10 @@ class media_element:
         self.ws_thread.start()
         time.sleep(2) #to allow the websocket connection to properly initialise, will replace this with a method ot check connection status
 
-    def _parse_message(self, message):
-            """ Parses the server response into a standard format. 
-            {event_id : message["id"], status: success/failure, server_response (in event of success) :  message["result"]["value"] OR server_error: message["error"] } """
-
-            parsed_message = dict()
-            logging.info("Server Response:"+message)
-            message = json.loads(message)
-            if "method" in message:
-                parsed_message["event"] = message["params"]["value"]["type"]
-                parsed_message["server_response"] = message["params"]["value"]
-                parsed_message["status"] = 1 
-
-            elif "result" in message:
-                parsed_message["event"] = message["id"]
-                parsed_message["status"] = 1 
-
-                if "value" in message["result"]:
-                    parsed_message["server_response"] = message["result"]["value"]
-                else:
-                    parsed_message["server_response"] = None
-
-            elif "error" in message:
-                parsed_message["event"] = message["id"]
-                parsed_message["status"] = 0
-                parsed_message["error"] = message["error"]
-
-            return parsed_message
-
     def on_message(self,ws,message):
         """ Parses the message recieved from the kurento media server and handles the message by calling the appropriate callback function assigned to the server response """
 
-        parsed_message = self._parse_message(message) 
+        parsed_message = parse_message(message) 
         try:
             logging.info("Server Response: "+str(parsed_message))
             if(parsed_message["status"] == 1):
@@ -75,12 +48,12 @@ class media_element:
             
     def _subscribe(self,params,rpc_id):
         """Allows us to subscribe to an event associated with a media_element """
-        message = self.generate_json_rpc(params,"subscribe",rpc_id)
+        message = generate_json_rpc(params,"subscribe",rpc_id)
         self.ws.send(message)
 
     def _invoke(self,params,rpc_id):
         """ Allows to invoke a particular operation in the media element """
-        message = self.generate_json_rpc(params,"invoke",rpc_id)
+        message = generate_json_rpc(params,"invoke",rpc_id)
         self.ws.send(message)
         
     def connect(self,end_point_object,callback,*callback_args):
@@ -103,8 +76,3 @@ class media_element:
     def add_event(self,event_name,callback,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)
         
-    def generate_json_rpc(self,params,method,rpc_id):
-        """ generates the json string for sending to the server """
-
-        message = {"jsonrpc":"2.0","id":rpc_id,"method":method,"params":params}
-        return json.dumps(message)
