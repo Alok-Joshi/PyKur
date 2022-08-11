@@ -26,6 +26,8 @@ class media_element:
 
         if(not self.timeout):
             logging.error("Connection failed")
+        else:
+            logging.info("connection established")
 
     def timeout(self):
         """ waits 0.1 seconds 10 times for successful websocket connection """
