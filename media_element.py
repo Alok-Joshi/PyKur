@@ -73,15 +73,15 @@ class media_element:
         message = generate_json_rpc(params,"invoke",rpc_id)
         self.ws.send(message)
         
-    def connect(self,end_point_object,callback,*callback_args):
+    def connect(self,media_element_object,callback = None,*callback_args):
         """ Allows us to connect one endpoint to another """
-        params = {"object":self.object_id, "operation": "connect", "operationParams": { "sink": end_point_object.object_id }, "sessionId":self.session_id }
+        params = {"object":self.object_id, "operation": "connect", "operationParams": { "sink": media_element_object.object_id }, "sessionId":self.session_id }
 
         rpc_id = str(uuid.uuid4()) 
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id)
 
-    def register_on_event(self,event_name,callback,*callback_args):
+    def register_on_event(self,event_name,callback = None,*callback_args):
         """ Allows to attach a callback function if we recieve an event from the KurentoMediaServer"""
 
         self.add_event(event_name,callback,*callback_args)
@@ -90,6 +90,6 @@ class media_element:
         self.add_event(rpc_id,None,())
         self._subscribe(params,rpc_id)
         
-    def add_event(self,event_name,callback,*callback_args):
+    def add_event(self,event_name,callback = None,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)
         
