@@ -22,8 +22,8 @@ class media_element:
         self.ws = websocket.WebSocketApp(self.kms_url,on_message= lambda ws,msg: self.on_message(ws,msg))
         self.ws_thread = threading.Thread(target = self.ws.run_forever,args=(None, None, 60, 30))
         self.ws_thread.start()
-        time.sleep(2) #to allow the websocket connection to properly initialise, will replace this with a method ot check connection status
-
+        time.sleep(0.1)
+            
     def on_message(self,ws,message):
         """ Parses the message recieved from the kurento media server and handles the message by calling the appropriate callback function assigned to the server response """
 
