@@ -7,8 +7,8 @@ from media_element import  media_element
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG)
 
 class webrtc_endpoint(media_element):
-    def __init__(self, session_id, object_id, kms_url):
-        super().__init__(session_id, object_id, kms_url)
+    def __init__(self, session_id, object_id):
+        super().__init__(session_id, object_id)
 
     def process_sdp_offer(self,sdp_offer,callback = None,*callback_args):
         """ Sends the WebRTC Client SDP Offer to the KurentoMediServer, and returns the SDP Answer from the KurentoMediServer"""
@@ -40,8 +40,8 @@ class webrtc_endpoint(media_element):
     
 class player_endpoint(media_element):
 
-    def __init__(self,session_id,object_id,rtsp_url,kms_url):
-        super().__init__(session_id,object_id,kms_url)
+    def __init__(self,session_id,object_id,rtsp_url):
+        super().__init__(session_id,object_id)
         self.rtsp_url = rtsp_url
 
     def play(self,callback = None,*callback_args):
