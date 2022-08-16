@@ -3,6 +3,7 @@ import uuid
 import json
 import logging
 from media_element import  media_element
+from utilities import rpc_id_generator
 
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG)
 
@@ -15,7 +16,7 @@ class webrtc_endpoint(media_element):
 
         params = { "object":self.object_id, "operation":"processOffer","operationParams": { "offer" :sdp_offer },"sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_process_sdp_offer_response"
+        rpc_id = rpc_id_generator(self.object_id,"process_sdp_offer_response")
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 
        #insert the callback in some callback dictionary, call it when you recieve sdp answer 
@@ -25,7 +26,7 @@ class webrtc_endpoint(media_element):
 
         params = { "object":self.object_id, "operation":"addIceCandidate","operationParams": { "candidate" : candidate },"sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_add_ice_candidate"+"_response"
+        rpc_id = rpc_id_generator(self.object_id,"add_ice_candidate_response") 
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 
 
@@ -34,7 +35,7 @@ class webrtc_endpoint(media_element):
 
         params = { "object":self.object_id, "operation":"gatherCandidates","sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_gather_ice_candidates"+"_response"
+        rpc_id = rpc_id_generator(self.object_id,"gather_ice_candidates_response")
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 
     
@@ -48,7 +49,7 @@ class player_endpoint(media_element):
         """ Start playing the media item """
         params = { "object":self.object_id, "operation":"play","sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_play" +"_response"
+        rpc_id = rpc_id_generator(self.object_id,"play_response")
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 
         
@@ -56,7 +57,7 @@ class player_endpoint(media_element):
         """ Pause playing the media item """
         params = { "object":self.object_id, "operation":"pause","sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_pause"+"_response"
+        rpc_id = rpc_id_generator(self.object_id,"pause_response")
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 
 
@@ -64,6 +65,6 @@ class player_endpoint(media_element):
         """ stop playing the media item """
         params = { "object":self.object_id, "operation":"stop","sessionId": self.session_id }
 
-        rpc_id = str(uuid.uuid4())+"_stop" + "_response"
+        rpc_id = rpc_id_generator(self.object_id,"stop_response")
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id) 

@@ -37,4 +37,9 @@ def  parse_message(message):
             return parsed_message
 
 
+def rpc_id_generator(object_id,event_type):
+    """ Generates a rpc_id for a particular json rpc call of a particular object. It combines the object_id and and the event_type from the user. This is useful while parsing the responses, as the object id allows us to know which object this response belongs to and the event type tells us what kind of response is this (response to sdp offer, response to play, etc) """
+
+    return f"{object_id}_{event_type}"
+    
 

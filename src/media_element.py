@@ -5,7 +5,7 @@ import threading
 import logging
 import time
 from exception import KurentoException
-from utilities import generate_json_rpc,parse_message
+from utilities import generate_json_rpc,parse_message,rpc_id_generator
 
 #websocket.enableTrace(True)
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
@@ -41,9 +41,6 @@ class media_element:
         except Exception as e:
             print(e)      
             
-    def rpc_id_generator(self,event_type):
-        # TODO: WIll use the object id and some extra parameters depending on the type of event 
-        pass
 
     def _subscribe(self,params,rpc_id):
         """Allows us to subscribe to an event associated with a media_element """
@@ -68,7 +65,8 @@ class media_element:
 
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
-        rpc_id = "subcribe_"+event_name+"_response"
+        rpc_id = rpc_id_generator(self.object_id,"subscribe_response")
+
         self.add_event(rpc_id,None,())
         self._subscribe(params,rpc_id)
         
