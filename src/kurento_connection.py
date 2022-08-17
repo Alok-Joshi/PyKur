@@ -1,7 +1,7 @@
 import websocket
 import threading
-from utilities import parse_message
-import pdb
+from .utilities import parse_message
+
 class kurento_connection:
 
     def __init__(self,on_open,kms_url):

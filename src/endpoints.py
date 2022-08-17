@@ -2,8 +2,8 @@ import websocket
 import uuid
 import json
 import logging
-from media_element import  media_element
-from utilities import rpc_id_generator
+from .media_element import  media_element
+from .utilities import rpc_id_generator
 
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG)
 
