@@ -11,6 +11,7 @@ from utilities import generate_json_rpc
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode ="w")
 
 class kurento_session:
+    """ Creates a new kurento session with a session id and a media pipeline """
 
     def __init__(self,kms_url) -> None:
 
