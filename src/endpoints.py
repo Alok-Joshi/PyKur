@@ -10,6 +10,7 @@ logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG)
 class webrtc_endpoint(media_element):
     def __init__(self, session_id, object_id):
         super().__init__(session_id, object_id)
+        self.events = set(("OnIceCandidate",))
 
     def process_sdp_offer(self,sdp_offer,callback = None,*callback_args):
         """ Sends the WebRTC Client SDP Offer to the KurentoMediServer, and returns the SDP Answer from the KurentoMediServer"""

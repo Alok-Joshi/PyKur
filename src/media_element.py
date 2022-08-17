@@ -1,9 +1,5 @@
-import uuid
 import json
-import websocket
-import threading
 import logging
-import time
 from exception import KurentoException
 from utilities import generate_json_rpc,parse_message,rpc_id_generator
 
@@ -18,12 +14,12 @@ class media_element:
         self.object_id = object_id
         self.event_dictionary = dict()
         self.ws = None #Will be given by the kurento_connection object when we register a media element to it
+        self.events = set() #Contains all the legal events on can subscribe to for the media element
 
         
-    def on_message(self,ws,message):
+    def on_message(self,parsed_message):
         """ Parses the message recieved from the kurento media server and handles the message by calling the appropriate callback function assigned to the server response """
 
-        parsed_message = parse_message(message) 
         try:
             logging.info("Server Response: "+str(parsed_message))
             if(parsed_message["status"] == 1):
@@ -56,12 +52,14 @@ class media_element:
         """ Allows us to connect one endpoint to another """
         params = {"object":self.object_id, "operation": "connect", "operationParams": { "sink": media_element_object.object_id }, "sessionId":self.session_id }
 
-        rpc_id = str(uuid.uuid4()) 
+        rpc_id = rpc_id_generator(self.object_id,"connect_response") 
         self.add_event(rpc_id,callback,*callback_args)
         self._invoke(params,rpc_id)
 
     def register_on_event(self,event_name,callback = None,*callback_args):
         """ Allows to attach a callback function if we recieve an event from the KurentoMediaServer"""
+        if(event_name not in self.events):
+            raise KurentoException(f"Illegal event : {event_name}")
 
         self.add_event(event_name,callback,*callback_args)
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
