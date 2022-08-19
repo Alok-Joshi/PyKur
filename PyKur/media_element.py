@@ -65,9 +65,23 @@ class media_element:
         params = { "type":event_name,"object":self.object_id,"sessionId":self.session_id }
         rpc_id = rpc_id_generator(self.object_id,"subscribe_response")
 
-        self.add_event(rpc_id,None,())
+        self.add_event(rpc_id) #for the subscribe response 
         self._subscribe(params,rpc_id)
         
     def add_event(self,event_name,callback = None,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)
+
+    def release(self):
+        """  releases the media element on the kurento server """
+        params = {"object":self.object_id, "sessionId":self.session_id }
+
+        rpc_id = rpc_id_generator(self.object_id,"release_response")
+        message = generate_json_rpc(params,"release",rpc_id)
+
+        self.add_event(rpc_id)
+        self.ws.send(message)
+
         
+
+
+

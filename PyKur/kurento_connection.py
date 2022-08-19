@@ -31,3 +31,8 @@ class kurento_connection:
 
         media_element = self.get_media_element(event_name)
         media_element.on_message(parsed_message)
+
+    def close_connection(self):
+        """ Joins the thread and closes the connection """
+        self.ws.close()
+        self.ws_thread.join()

@@ -42,7 +42,17 @@ class kurento_session:
         self.ws.send(message)
         response = json.loads(self.ws.recv())
         return response
-         
+          
+    def close(self):
+        """ Closes the session by freeing the media pipeline """
+        rpc_id = str(uuid.uuid4())
+        params = {"object":self.pipeline_id,"sessionId":self.session_id}
+        message = generate_json_rpc(params,"release",rpc_id)
+
+        self.ws.send(message)
+        response = json.loads(self.ws.recv())
+        logging.info("Pipeline Released. Message from server: "+str(response))
+
     def create_media_element(self,media_element,**kwargs):
             """ Creates the media element  and  it. Argument for PlayerEndpoint: uri """
 
@@ -67,4 +77,3 @@ class kurento_session:
             else:
                 logging.error("server response ERROR: "+str(response))
                 raise KurentoException(response["error"])
-
