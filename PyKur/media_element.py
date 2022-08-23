@@ -38,25 +38,25 @@ class media_element:
             print(e)      
             
 
-    def _subscribe(self,params,rpc_id):
+    async def _subscribe(self,params,rpc_id):
         """Allows us to subscribe to an event associated with a media_element """
         message = generate_json_rpc(params,"subscribe",rpc_id)
-        self.ws.send(message)
+        await self.ws.send(message)
 
-    def _invoke(self,params,rpc_id):
+    async def _invoke(self,params,rpc_id):
         """ Allows to invoke a particular operation in the media element """
         message = generate_json_rpc(params,"invoke",rpc_id)
-        self.ws.send(message)
+        await self.ws.send(message)
         
-    def connect(self,media_element_object,callback = None,*callback_args):
+    async def connect(self,media_element_object,callback = None,*callback_args):
         """ Allows us to connect one endpoint to another """
         params = {"object":self.object_id, "operation": "connect", "operationParams": { "sink": media_element_object.object_id }, "sessionId":self.session_id }
 
         rpc_id = rpc_id_generator(self.object_id,"connect_response") 
         self.add_event(rpc_id,callback,*callback_args)
-        self._invoke(params,rpc_id)
+        await self._invoke(params,rpc_id)
 
-    def register_on_event(self,event_name,callback = None,*callback_args):
+    async def register_on_event(self,event_name,callback = None,*callback_args):
         """ Allows to attach a callback function if we recieve an event from the KurentoMediaServer"""
         if(event_name not in self.events):
             raise KurentoException(f"Illegal event : {event_name}")
@@ -66,12 +66,12 @@ class media_element:
         rpc_id = rpc_id_generator(self.object_id,"subscribe_response")
 
         self.add_event(rpc_id) #for the subscribe response 
-        self._subscribe(params,rpc_id)
+        await self._subscribe(params,rpc_id)
         
     def add_event(self,event_name,callback = None,*callback_args):
         self.event_dictionary[event_name] = (callback,callback_args)
 
-    def release(self):
+    async def release(self):
         """  releases the media element on the kurento server """
         params = {"object":self.object_id, "sessionId":self.session_id }
 
@@ -79,7 +79,7 @@ class media_element:
         message = generate_json_rpc(params,"release",rpc_id)
 
         self.add_event(rpc_id)
-        self.ws.send(message)
+        await self.ws.send(message)
 
         
 

@@ -1,15 +1,25 @@
-import websocket
 import threading
+import asyncio
+import websockets
 from .utilities import parse_message
 
 class kurento_connection:
 
     def __init__(self,on_open,kms_url):
         self.kms_url = kms_url
-        self.ws = websocket.WebSocketApp(self.kms_url,on_message= lambda ws,msg: self.on_message(ws,msg),on_open = lambda ws: on_open(self)) 
-        self.ws_thread = threading.Thread(target = self.ws.run_forever,args=(None, None, 60, 30))
-        self.ws_thread.start()
+        self.ws = None
         self.media_elements = list()
+
+    async def connect(self):
+        self.ws = await websockets.connect(self.kms_url)
+        await self.listen_for_replies()
+
+    async def listen_for_replies(self);
+        """listens for replies """
+        
+        while(True):
+            message = await self.ws.recv()
+            self.on_message(message)
 
     def add_media_element(self,media_element):
         """ Adds the element to the kurento connection. Allows the element to send and recieve messages to and from kurento """
@@ -24,7 +34,7 @@ class kurento_connection:
 
         return None
 
-    def on_message(self,ws,message):
+    def on_message(self,message):
         """ Gets the message and routes it to the appropriate media_element  or object """
         parsed_message = parse_message(message) 
         event_name = parsed_message["event"]
@@ -34,5 +44,4 @@ class kurento_connection:
 
     def close_connection(self):
         """ Joins the thread and closes the connection """
-        self.ws.close()
-        self.ws_thread.join()
+        await self.ws.close()

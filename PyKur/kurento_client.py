@@ -6,7 +6,6 @@ from .endpoints import player_endpoint, webrtc_endpoint
 from .exception import KurentoException
 from .utilities import generate_json_rpc
 
-#websocket.enableTrace(True)
 
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode ="w")
 
@@ -20,7 +19,6 @@ class kurento_session:
         self.session_id = None
         self.ws = websocket.create_connection(kms_url)
         self._create_media_pipeline()
-        #seperate thread for ping pong        
         
     def _create_media_pipeline(self) -> None:
         """Creates the media pipeline """
