@@ -1,8 +1,10 @@
 import threading
+import logging
 import pdb
 import asyncio
 import websockets
 from .utilities import parse_message
+from websockets.exceptions import ConnectionClosedOK,ConnectionClosedError
 
 class kurento_connection:
 
@@ -21,8 +23,12 @@ class kurento_connection:
             try:
                 message = await self.ws.recv()
                 await self.on_message(message)
-            except Exception as e:
-                print(e)
+            except ConnectionClosedOK:
+                logging.info("connection closed")
+                break
+            except ConnectionClosedError:
+                logging.info("connection closed. ERROR")
+                break
 
     def add_media_element(self,media_element):
         """ Adds the element to the kurento connection. Allows the element to send and recieve messages to and from kurento """
@@ -45,5 +51,5 @@ class kurento_connection:
         await media_element.on_message(parsed_message)
 
     async def close_connection(self):
-        """ Joins the thread and closes the connection """
+        """ Joins the connection """
         await self.ws.close()
