@@ -1,7 +1,7 @@
 import json
 import logging
-from .exception import KurentoException
-from .utilities import generate_json_rpc,parse_message,rpc_id_generator
+from exception import KurentoException
+from utilities import generate_json_rpc,parse_message,rpc_id_generator
 
 #websocket.enableTrace(True)
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
@@ -16,8 +16,12 @@ class media_element:
         self.ws = None #Will be given by the kurento_connection object when we register a media element to it
         self.events = set() #Contains all the legal events on can subscribe to for the media element
 
-        
-    def on_message(self,parsed_message):
+    def set_connection(self,konn_obj):
+        """ Function assigns a websocket connection object to the media element. Also registers the media element with the connection object for routing of messages. enables the media element to communicate with the server  """
+        self.ws = konn_obj.ws
+        konn_obj.add_media_element(self)
+
+    async def on_message(self,parsed_message):
         """ Parses the message recieved from the kurento media server and handles the message by calling the appropriate callback function assigned to the server response """
 
         try:
@@ -29,9 +33,9 @@ class media_element:
                 if(callback is not None):
                     server_response = parsed_message["server_response"]
                     if(parsed_message["server_response"] is not None):
-                        callback(server_response,*callback_args)
+                        await callback(server_response,*callback_args)
                     else:
-                        callback(*callback_args)
+                        await callback(*callback_args)
             else:
                 raise KurentoException(parsed_message["error"])
         except Exception as e:
