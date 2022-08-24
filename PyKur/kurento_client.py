@@ -2,9 +2,9 @@ import websocket
 import uuid
 import json
 import logging
-from .endpoints import player_endpoint, webrtc_endpoint
-from .exception import KurentoException
-from .utilities import generate_json_rpc
+from endpoints import player_endpoint, webrtc_endpoint
+from exception import KurentoException
+from utilities import generate_json_rpc
 
 
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode ="w")
