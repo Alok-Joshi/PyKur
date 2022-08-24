@@ -2,7 +2,7 @@ import threading
 import pdb
 import asyncio
 import websockets
-from utilities import parse_message
+from .utilities import parse_message
 
 class kurento_connection:
 

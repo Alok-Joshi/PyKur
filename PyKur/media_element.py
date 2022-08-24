@@ -1,7 +1,7 @@
 import json
 import logging
-from exception import KurentoException
-from utilities import generate_json_rpc,parse_message,rpc_id_generator
+from .exception import KurentoException
+from .utilities import generate_json_rpc,parse_message,rpc_id_generator
 
 #websocket.enableTrace(True)
 logging.basicConfig(filename = "kurentoclient.log",level= logging.DEBUG,filemode = "w")
