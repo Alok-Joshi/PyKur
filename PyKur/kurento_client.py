@@ -17,14 +17,18 @@ class kurento_session:
         self.kms_url = kms_url
         self.pipeline_id = None
         self.session_id = None
-        self.ws = None
+        self.ws = None #Is assigned when the session is started
 
     async def start_session(self):
+        """
+            Starts the session by creating a media pipeline 
+        """
         self.ws = await websockets.connect(self.kms_url)
         await self._create_media_pipeline()
 
     async def _create_media_pipeline(self) -> None:
         """Creates the media pipeline """
+
         params = { "type": "MediaPipeline", "constructorParams":{}, "properties": {} }
         response = await self._create(params)
 
